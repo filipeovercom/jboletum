@@ -1,9 +1,8 @@
 package tarefas;
 
+import lombok.extern.slf4j.Slf4j;
 import models.PaymentSlip;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -12,37 +11,47 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+@Slf4j
 public class EmitirBoleto implements Runnable {
 
     @Override
     public void run() {
 
-    }
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", String.valueOf(4));
 
-    public static void main(String[] args) {
         Path diretorio = Paths.get("");
 
+        executaEmissaoDeBoletos(diretorio);
+    }
+
+    private static void executaEmissaoDeBoletos(Path diretorio) {
+
         try (var files = Files.list(diretorio)) {
-            files
+
+            files.toList()
+                    .parallelStream()
                     .filter(EmitirBoleto::filtraArquivosRemessa)
-                    .peek(file -> System.out.println(file.getFileName()))
                     .forEach(file -> {
-                        try (var linhas = Files.lines(file)) {
-                            var codigosDeBarra = linhas.map(EmitirBoleto::transformaLinhaEmBoleto)
-                                    .map(EmitirBoleto::gerarCodigoDeBarras)
-                                    .collect(Collectors.toList());
-                            gerarArquivoRetorno(file.getFileName().toString(), codigosDeBarra);
-                        } catch (IOException e) {
-                            System.out.println("Deu erro ao ler linhas do arquivo");
-                        }
+                        log.info("Executando for para thread {}", Thread.currentThread().getName());
+                        log.info("Arquivo filtrado: {}", file.getFileName().toString());
+                        extrairLinhasDoArquivo(file);
                     });
 
         } catch (IOException e) {
             System.out.println("Deu erro!!");
+        }
+    }
+
+    private static void extrairLinhasDoArquivo(Path file) {
+        try (var linhas = Files.lines(file)) {
+            var codigosDeBarra = linhas.map(EmitirBoleto::transformaLinhaEmBoleto)
+                    .map(EmitirBoleto::gerarCodigoDeBarras)
+                    .collect(Collectors.toList());
+            gerarArquivoRetorno(file.getFileName().toString(), codigosDeBarra);
+        } catch (IOException e) {
+            System.out.println("Deu erro ao ler linhas do arquivo");
         }
     }
 
