@@ -38,8 +38,8 @@ public class EmitirBoleto implements Runnable {
         executaEmissaoDeBoletos(diretorio);
 
        duration = new Date().getTime() - start;
+        geraRelatorios();
 
-       geraRelatorios();
 
     }
 
@@ -140,10 +140,7 @@ public class EmitirBoleto implements Runnable {
 
         //A FAZER colocar o adjuster para quando a data for posterior e em fim de semana para jogar para o proximo dia util
 
-            if ( LocalDate.from(data).isBefore(LocalDate.now()))
-                return false;
-            else
-        return true ;
+        return !LocalDate.from(data).isBefore(LocalDate.now());
     }
 
     private static boolean filtraArquivosRemessa(Path file) {

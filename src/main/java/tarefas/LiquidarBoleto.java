@@ -26,11 +26,27 @@ import java.util.stream.Stream;
 @Slf4j
 public class LiquidarBoleto implements Runnable {
 
+    static List<String> ok = new ArrayList<>();
+    static List<String> erro = new ArrayList<>();
+    static List<String> vencidos = new ArrayList<>();
+    static long duration;
     @Override
     public void run() {
+        long start = new Date().getTime();
         Path diretorio = Paths.get("");
 
         executaLiquidacaoDeBoletos(diretorio);
+
+        duration = new Date().getTime() - start;
+        geraRelatorios();
+    }
+
+    private void geraRelatorios() {
+        System.out.println("Tempo de execução: " + duration);
+        System.out.println("Total de boletos gerados: " + ok.size() + vencidos.size());
+        System.out.println("Total de boletos gerados com sucesso: " + ok.size());
+        System.out.println("Total de boletos gerados vencidos: " + vencidos.size());
+
     }
 
     private void executaLiquidacaoDeBoletos(Path diretorio) {
@@ -50,7 +66,8 @@ public class LiquidarBoleto implements Runnable {
         try (var linha = Files.lines(path)) {
             var pagamentos = linha
                     .filter(LiquidarBoleto::filtraArquivosOK)
-                  .map(LiquidarBoleto::verificaBoleto)
+                  .map(LiquidarBoleto::montaBoleto)
+                    .filter(LiquidarBoleto::verificaBoletoVencido)
                     .map(LiquidarBoleto::geraBoletoPago).toList();
 
             geraArquivodePagamento(path.getFileName().toString(), pagamentos);
@@ -60,6 +77,18 @@ public class LiquidarBoleto implements Runnable {
         } catch (IOException e) {
             System.out.println("Deu erro ao ler linhas do arquivo");
         }
+    }
+
+    private static boolean verificaBoletoVencido(PaymentSlip boleto) {
+        if(boleto.getDueDate().isBefore(LocalDate.now())) {
+            ok.add(boleto.getId());
+            return true;
+        } else {
+            vencidos.add(boleto.getId());
+            return false;
+        }
+
+
     }
 
     private static void geraArquivodePagamento(String nomeArquivoRetorno, List<String> pagamentos) throws IOException {
@@ -101,25 +130,9 @@ public class LiquidarBoleto implements Runnable {
                 .build();
     }
 
-    private static PaymentSlip verificaBoleto(String s) {
-   //   System.out.println(s.substring(0,36));
-   //   System.out.println(s.substring(36,44));
-   //   System.out.println(s.substring(44,48));
-   //   System.out.println(s.substring(48,53));
-   //   System.out.println(s.substring(53,57));
-   //   System.out.println(s.substring(57,62));
-   //   System.out.println(s.substring(62,65));
-   //   System.out.println(s.substring(65,67));
+    private static PaymentSlip montaBoleto(String s) {
 
-    //   boleto.getId(),
-    //           boleto.getDueDate().toString().replace("-",""),
-    //                   boleto.getPayer().getAgencyNumber(),
-    //                   boleto.getPayer().getAccountNumber(),
-    //                   boleto.getPayee().getAgencyNumber(),
-    //                   boleto.getPayee().getAccountNumber(),
-    //                   boleto.getValue(),   s.substring(40,42)  s.substring(42,44)
-        //LocalDate.of(Integer.parseInt(s.substring(36,40)),Integer.parseInt(s.substring(40,42)),Integer.parseInt(s.substring(42,44)) )
-        PaymentSlip boleto = PaymentSlip.builder()
+        return PaymentSlip.builder()
                 .id(s.substring(0,36))
                 .dueDate(LocalDate.of(Integer.parseInt(s.substring(36,40)),Integer.parseInt(s.substring(40,42)),Integer.parseInt(s.substring(42,44)) ))
                 .payer(BankCustomer.builder()
@@ -134,7 +147,6 @@ public class LiquidarBoleto implements Runnable {
                         .build())
                 .value(BigDecimal.valueOf(Long.parseLong((s.substring(62,65)))))
                 .build();
-        return boleto;
     }
 
     private static boolean filtraArquivosOK(String s) {
