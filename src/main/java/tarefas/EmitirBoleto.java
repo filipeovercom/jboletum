@@ -55,18 +55,17 @@ public class EmitirBoleto implements Supplier<Map<String, String>> {
     }
 
     private static int extrairLinhasDoArquivo(Path file) {
-        int boletosSucesso = 0;
+        AtomicInteger boletosSucesso = new AtomicInteger(0);
         try (var linhas = Files.lines(file)) {
             var codigosDeBarra = linhas.map(EmitirBoleto::transformaLinhaEmBoleto)
                     .map(EmitirBoleto::gerarCodigoDeBarras)
+                    .peek(boleto -> boletosSucesso.addAndGet(1))
                     .collect(Collectors.toList());
             gerarArquivoRetorno(file.getFileName().toString(), codigosDeBarra);
-            boletosSucesso++;
         } catch (IOException e) {
-            boletosSucesso--;
             log.error("Deu erro ao ler linhas do arquivo");
         }
-        return boletosSucesso;
+        return boletosSucesso.get();
     }
 
     private static void gerarArquivoRetorno(String nomeArquivoRemessa, List<String> codigosDeBarra) {
