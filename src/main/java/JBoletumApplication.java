@@ -1,8 +1,8 @@
 import models.Menu;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -15,10 +15,9 @@ public class JBoletumApplication {
         System.out.println("INFO: Type exit and press enter to close the application!");
 
         exibeMenu();
-
-        escolherTarefa(
+        CompletableFuture.runAsync( escolherTarefa(
                 JBoletumApplication::capturaEntradaScanner,
-                JBoletumApplication::identificaMenu);
+                JBoletumApplication::identificaMenu));
     }
 
     private static Optional<Menu> identificaMenu(String valorCapturado) {
@@ -29,6 +28,7 @@ public class JBoletumApplication {
     }
 
     private static String capturaEntradaScanner() {
+        System.out.print("Digite a opão desejada: ");
         return new Scanner(System.in).nextLine();
     }
 
@@ -43,13 +43,19 @@ public class JBoletumApplication {
         return String.format(formato, menu.ordinal(), menu.getNome());
     }
 
-    private static void escolherTarefa(Supplier<String> funcaoCapturaEntrada,
-                                       Function<String, Optional<Menu>> funcaoIdentificaMenu) {
+    private static Runnable escolherTarefa(Supplier<String> funcaoCapturaEntrada,
+                                           Function<String, Optional<Menu>> funcaoIdentificaMenu) {
         funcaoIdentificaMenu.apply(funcaoCapturaEntrada.get())
                 .map(Menu::getTarefa)
-                .ifPresentOrElse(Runnable::run, () -> {
+               .ifPresentOrElse(Runnable::run, () -> {
                     System.out.println("Menu não encontrado para o valor de entrada!!");
+
                     escolherTarefa(funcaoCapturaEntrada, funcaoIdentificaMenu);
                 });
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        exibeMenu();
+
+        escolherTarefa(funcaoCapturaEntrada, funcaoIdentificaMenu);
+        return null;
     }
 }

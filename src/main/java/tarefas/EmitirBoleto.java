@@ -43,6 +43,8 @@ public class EmitirBoleto implements Runnable {
         System.out.println("Total de boletos gerados: " + gerados);
         System.out.println("Total de boletos gerados com sucesso: " + ok.size());
         System.out.println("Total de boletos gerados sem sucesso: " + erro.size());
+        ok.clear();
+        erro.clear();
     }
 
 

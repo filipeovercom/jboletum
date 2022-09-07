@@ -41,6 +41,9 @@ public class LiquidarBoleto implements Runnable {
         System.out.println("Total de boletos liquidados com sucesso: " + ok.size());
         System.out.println("Total de boletos invalidos: " + erro.size());
         System.out.println("Total de boletos vencidos: " + vencidos.size());
+        ok.clear();
+        vencidos.clear();
+        erro.clear();
     }
 
     private void executaLiquidacaoDeBoletos(Path diretorio) {
