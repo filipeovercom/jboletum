@@ -14,43 +14,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-@Slf4j
 public class JBoletumApplication {
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
+    public static void main(String[] args) {
 
-        System.out.println("Application is running...");
-        System.out.println("INFO: Type exit and press enter to close the application!");
+        System.out.println("Iniciando...");
 
         exibeMenu();
 
         escolherTarefa(
                 JBoletumApplication::capturaEntradaScanner,
                 JBoletumApplication::identificaMenu);
-
-//        CompletableFuture<String> futureString = CompletableFuture.supplyAsync(() -> {
-//            try {
-//                log.info(Thread.currentThread().getName());
-//                Thread.sleep(3000);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//            return "Filipe assíncrono";
-//        });
-//
-//        futureString.thenAccept(log::info);
-////        log.info(futureString.get());
-//
-//        var tarefaEmitirBoletos = new EmitirBoleto();
-//        var tarefaLiquidarBoletos = new LiquidarBoleto();
-//
-//        CompletableFuture<Void> futuroEmissao = CompletableFuture.runAsync(tarefaEmitirBoletos);
-//        CompletableFuture<Void> futuroLiquidacao = CompletableFuture.runAsync(tarefaLiquidarBoletos);
-//
-//        futuroEmissao.thenRun(() -> log.info("O processamento de emissão acabou"));
-//        futuroLiquidacao.thenRun(() -> log.info("O processamento de liquidação acabou"));
-//
-//        Thread.sleep(5000);
     }
 
     private static Optional<Menu> identificaMenu(String valorCapturado) {
@@ -78,19 +52,8 @@ public class JBoletumApplication {
     private static void escolherTarefa(Supplier<String> funcaoCapturaEntrada,
                                        Function<String, Optional<Menu>> funcaoIdentificaMenu) {
         funcaoIdentificaMenu.apply(funcaoCapturaEntrada.get())
-                .map(menu -> {
-                    log.info("Executando tarefa [{}]", menu.getNome());
-                    return menu.getTarefa();
-                })
-                .ifPresentOrElse(tarefa -> {
-                    CompletableFuture.supplyAsync(tarefa)
-                            .thenAccept(relatorio ->
-                                relatorio.entrySet().stream()
-                                .map(entrada -> String.format("%s %s", entrada.getKey(), entrada.getValue()))
-                                .forEach(log::warn));
-                    exibeMenu();
-                    escolherTarefa(funcaoCapturaEntrada, funcaoIdentificaMenu);
-                }, () -> {
+                .map(Menu::getTarefa)
+                .ifPresentOrElse(Runnable::run, () -> {
                     System.out.println("Menu não encontrado para o valor de entrada!!");
                     escolherTarefa(funcaoCapturaEntrada, funcaoIdentificaMenu);
                 });
