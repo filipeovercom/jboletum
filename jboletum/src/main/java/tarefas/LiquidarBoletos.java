@@ -109,7 +109,7 @@ public class LiquidarBoletos implements Runnable {
 
         if(boleto.getValue().compareTo(boleto.getPayee().getBalance())>0){
             return boleto.toBuilder()
-                    .barcode("Saldo insulfiente :")
+                    .result(": Saldo insulfiente")
                     .build();
         }
 
@@ -118,7 +118,7 @@ public class LiquidarBoletos implements Runnable {
                         .balance(payer.getBalance().subtract(boleto.getValue())).build())
                 .payee(payee.toBuilder()
                         .balance(payee.getBalance().add(boleto.getValue())).build())
-                .barcode(": Pago")
+                .result(": Pago")
                 .build();
     }
 

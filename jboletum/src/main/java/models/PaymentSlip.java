@@ -16,5 +16,6 @@ public class PaymentSlip {
     private final BankCustomer payee;
     private final BigDecimal value;
     private final String barcode;
+    private final String result;
 
 }
