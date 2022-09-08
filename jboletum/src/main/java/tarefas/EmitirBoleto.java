@@ -1,5 +1,6 @@
 package tarefas;
 
+import models.BankCustomer;
 import models.PaymentSlip;
 
 import java.io.IOException;
@@ -81,6 +82,8 @@ public class EmitirBoleto implements Runnable {
                 .id(UUID.randomUUID().toString())
                 .dueDate(ajustarDataVencimentoFinaisDeSemana(LocalDate.parse(valores[0]))) // TODO -> Transformar string em LocalDate
                 .value(new BigDecimal(valores[1]))
+                .payee(BankCustomer.builder()
+                        .name(valores[3]).build())
                 .build();
     }
 
@@ -101,11 +104,11 @@ public class EmitirBoleto implements Runnable {
     private static PaymentSlip checaDataValida(PaymentSlip boleto){
         if (boleto.getDueDate().isBefore(LocalDate.now())){
             return boleto.toBuilder()
-                    .barcode("Data invalida para emissão")
+                    .barcode(": Data invalida para emissão")
                     .build();
         }
         return boleto.toBuilder()
-                .barcode("OK")
+                .barcode(": OK")
                 .build();
     }
 

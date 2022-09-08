@@ -17,7 +17,9 @@ import java.time.temporal.TemporalQueries;
 import java.time.temporal.TemporalQuery;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class LiquidarBoletos implements Runnable {
 
@@ -93,9 +95,9 @@ public class LiquidarBoletos implements Runnable {
                 .dueDate(LocalDate.parse(valores[1]))
                 .value(new BigDecimal(valores[2]))
                 .payee(BankCustomer.builder()
-                        .balance(new BigDecimal(valores[5])).build())
+                        .balance(new BigDecimal(valores[4])).build())
                 .payer(BankCustomer.builder()
-                        .balance(new BigDecimal(valores[6])).build())
+                        .balance(new BigDecimal(valores[5])).build())
                 .build();
     }
 
@@ -116,6 +118,7 @@ public class LiquidarBoletos implements Runnable {
                         .balance(payer.getBalance().subtract(boleto.getValue())).build())
                 .payee(payee.toBuilder()
                         .balance(payee.getBalance().add(boleto.getValue())).build())
+                .barcode(": Pago")
                 .build();
     }
 
@@ -126,11 +129,11 @@ public class LiquidarBoletos implements Runnable {
 
         if (hoje.query(verificaVencimento)){
             return boleto.toBuilder()
-                    .barcode("Data valida")
+                    .barcode(": Data valida")
                     .build();
         }
         return boleto.toBuilder()
-                .barcode("Boleto vencido")
+                .barcode(": Boleto vencido")
                 .build();
     }
 }
