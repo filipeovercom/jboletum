@@ -19,7 +19,6 @@ public class LiquidarBoleto implements Runnable {
     static List<LocalDate> ok = new ArrayList<>();
     static List<String> erro = new ArrayList<>();
     static List<LocalDate> vencidos = new ArrayList<>();
-    static long duration;
     @Override
     public void run() {
         Instant start = Instant.now();
@@ -140,18 +139,6 @@ public class LiquidarBoleto implements Runnable {
     private static PaymentSlip montaBoleto(String linha) {
         String[] valores = linha.split(",");
 
-        BankCustomer payee = BankCustomer.builder()
-                .id(UUID.randomUUID().toString())
-                .agencyNumber(valores[2])
-                .accountNumber(valores[3])
-                .balance(new BigDecimal(valores[7]))
-                .build();
-        BankCustomer payer = BankCustomer.builder()
-                .id(UUID.randomUUID().toString())
-                .agencyNumber(valores[4])
-                .accountNumber(valores[5])
-                .balance(new BigDecimal(valores[8]))
-                .build();
         return PaymentSlip.builder()
                 .id(valores[0])
                 .dueDate(LocalDate.parse(valores[1], DateTimeFormatter.BASIC_ISO_DATE))
