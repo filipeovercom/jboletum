@@ -4,8 +4,6 @@ package tarefas;
 import lombok.extern.slf4j.Slf4j;
 import models.BankCustomer;
 import models.PaymentSlip;
-import org.w3c.dom.ls.LSOutput;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -39,7 +37,7 @@ public class LiquidarBoleto implements Runnable {
         int lidos = ok.size() + vencidos.size() + erro.size();
         System.out.println("Total de boletos lidos: " + lidos);
         System.out.println("Total de boletos liquidados com sucesso: " + ok.size());
-        System.out.println("Total de boletos invalidos: " + erro.size());
+        System.out.println("Total de boletos sem saldo: " + erro.size());
         System.out.println("Total de boletos vencidos: " + vencidos.size());
         ok.clear();
         vencidos.clear();
@@ -65,6 +63,7 @@ public class LiquidarBoleto implements Runnable {
                    .filter(LiquidarBoleto::filtraArquivosOK)
                   .map(LiquidarBoleto::montaBoleto)
                     .filter(LiquidarBoleto::verificaBoletoVencido)
+                    .filter(LiquidarBoleto::verificaSaldoPagador)
                     .map(LiquidarBoleto::geraBoletoPago)
                     .collect(Collectors.toList());
 
@@ -75,6 +74,13 @@ public class LiquidarBoleto implements Runnable {
         } catch (IOException e) {
             System.out.println("Deu erro ao ler linhas do arquivo");
         }
+    }
+
+    private static boolean verificaSaldoPagador(PaymentSlip paymentSlip) {
+        if (!(paymentSlip.getPayer().getBalance().compareTo(paymentSlip.getValue()) == 1))  {
+            erro.add(paymentSlip.getId());
+        }
+        return paymentSlip.getPayer().getBalance().compareTo(paymentSlip.getValue()) == 1;
     }
 
     private static boolean verificaBoletoVencido(PaymentSlip boleto) {
@@ -169,7 +175,7 @@ public class LiquidarBoleto implements Runnable {
 
     private static boolean filtraArquivosOK(String s) {
         if (!s.endsWith("OK")) {
-            erro.add("erro");
+            vencidos.add(LocalDate.now());
         }
         return s.endsWith("OK");
     }

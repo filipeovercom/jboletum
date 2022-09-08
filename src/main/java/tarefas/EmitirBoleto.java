@@ -1,6 +1,6 @@
 package tarefas;
 
-import Utils.BankList;
+
 import lombok.extern.slf4j.Slf4j;
 import models.BankCustomer;
 import models.PaymentSlip;
