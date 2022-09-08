@@ -25,8 +25,6 @@ public class LiquidarBoleto implements Runnable {
         Path diretorio = Paths.get("");
 
         executaLiquidacaoDeBoletos(diretorio);
-
-
         geraRelatorios(start);
     }
 
