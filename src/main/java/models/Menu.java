@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import tarefas.EmitirBoleto;
 import tarefas.LiquidarBoleto;
+import tarefas.SairSistema;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -14,8 +15,8 @@ public enum Menu {
 
     EMITIR_BOLETOS("Emitir boletos", new EmitirBoleto()),
     LIQUIDAR_BOLETOS("Liquidar boletos", new LiquidarBoleto()),
-    SAIR_DO_SISTEMA("Sair do sistema", () -> Map.of("Saindo do sistema", "..."));
+    SAIR_DO_SISTEMA("Sair do sistema", new SairSistema());
 
     private String nome;
-    private Supplier<Map<String, String>> tarefa;
+    private Runnable tarefa;
 }
