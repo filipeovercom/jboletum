@@ -85,6 +85,7 @@ public class LiquidarBoletos implements Runnable {
         s += paymentSlip.getPayee().getBalance();
         s += paymentSlip.getPayer().getBalance();
         s += paymentSlip.getBarcode();
+        s += paymentSlip.getResult();
         return s; // TODO -> criar codigo a partir das informações do boleto
     }
 
